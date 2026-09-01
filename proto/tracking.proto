@@ -1,0 +1,55 @@
+// tracking.proto
+//
+// Schema for the live delivery tracker. This one file is the contract shared by
+// every driver device, the ingest server, and every customer app — in any
+// language. See ../PROTO_GUIDE.md for why it is written the way it is.
+
+syntax = "proto3";
+
+package tracking;
+
+// One GPS update, sent by a driver's device roughly every 2 seconds while a
+// delivery is active. This is the hot message: it is sent thousands of times
+// per delivery, so every byte and every microsecond of parse time counts.
+message LocationPing {
+  // Field numbers 1-15 take a single byte on the wire, so the fields that are
+  // ALWAYS present live here.
+  string delivery_id = 1;
+  int32  driver_id   = 2;
+  double lat         = 3;   // WGS84 latitude
+  double lng         = 4;   // WGS84 longitude
+  float  heading     = 5;   // degrees, 0-360 (float is plenty; ~3 sig figs)
+  float  speed_mps   = 6;   // metres per second
+  int64  ts          = 7;   // unix epoch milliseconds
+
+  enum Status {
+    STATUS_UNSPECIFIED = 0;  // first enum value MUST be zero and mean "unset"
+    EN_ROUTE           = 1;
+    ARRIVED            = 2;
+  }
+  Status status = 8;
+
+  // Example of a field added AFTER v1 shipped. Old clients that never send it
+  // are still valid; old readers that don't know it simply ignore it.
+  float accuracy_m = 9;
+
+  // Numbers 10 and 11 were used by fields we removed. Never hand them out again.
+  reserved 10, 11;
+  reserved "battery_pct", "temperature_c";
+}
+
+// Server -> customer: the current known position for a delivery, plus a little
+// derived context so the customer app doesn't have to compute it.
+message TrackUpdate {
+  LocationPing ping        = 1;
+  uint32       ping_seq    = 2;   // monotonically increasing per delivery
+  uint32       eta_seconds = 3;
+}
+
+// A whole delivery's worth of pings, used when the finished trip is written to
+// disk / a warehouse. Shows how a `repeated` message field behaves.
+message Trip {
+  string               delivery_id = 1;
+  int32                driver_id   = 2;
+  repeated LocationPing pings       = 3;
+}
