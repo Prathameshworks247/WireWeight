@@ -1,0 +1,17 @@
+{
+  "name": "delivery-tracker-json-vs-protobuf",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A live delivery tracker built once with JSON and once with Protocol Buffers, to make the payload-size and latency difference visible.",
+  "scripts": {
+    "bench": "node src/bench.js",
+    "server:json": "FORMAT=json node src/server.js",
+    "server:proto": "FORMAT=proto node src/server.js",
+    "driver:json": "FORMAT=json node src/driver-sim.js",
+    "driver:proto": "FORMAT=proto node src/driver-sim.js"
+  },
+  "dependencies": {
+    "protobufjs": "^7.4.0",
+    "ws": "^8.18.0"
+  }
+}
