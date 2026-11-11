@@ -1,4 +1,4 @@
-# Delivery Tracker — JSON vs Protocol Buffers
+# WireWeight — JSON vs Protocol Buffers
 
 A small but *real* application — the "watch your driver on a map" feature — built once
 with **JSON** and once with **Protocol Buffers**, so the difference in **payload size**
